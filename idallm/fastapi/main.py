@@ -113,7 +113,6 @@ def show_about():
     }
 
 def main(host : str, port : int):
-    os.chdir(os.getenv("APP_DIR"))
     uvicorn.run("main:app", host=host, port=port,
                 reload=True,
                 )
