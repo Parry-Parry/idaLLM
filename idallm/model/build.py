@@ -1,6 +1,6 @@
 import sys
 import torch
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, LlamaModelForCausalLM, LlamaTokenizer
 from accelerate import load_checkpoint_and_dispatch, init_empty_weights
 
 '''
@@ -10,13 +10,13 @@ TODO:
 
 def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
     if tokenizer_dir is None: tokenizer_dir = model_dir
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
+    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     config = AutoConfig.from_pretrained(model_dir, **kwargs)
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
 
     with init_empty_weights():
-        model = AutoModelForCausalLM.from_pretrained(config)
+        model = LlamaModelForCausalLM.from_pretrained(config)
 
     model.tie_weights()
     model = load_checkpoint_and_dispatch(
@@ -32,11 +32,12 @@ def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
 
 def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
     if tokenizer_dir is None: tokenizer_dir = model_dir
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
+
+    model = LlamaModelForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
+    
+    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
-
-    model = AutoModelForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
 
     model.eval()
 
