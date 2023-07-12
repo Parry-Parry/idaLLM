@@ -4,8 +4,6 @@ import numpy as np
 
 from idallm.fastapi.config import CONFIG
 
-
-
 def preprocess(package: dict, text : List[str]) -> list:
     """
     Preprocess data before running with model, for example scaling and doing one hot encoding
