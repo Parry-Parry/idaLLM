@@ -46,7 +46,7 @@ def get_config() -> dict:
     config.update(ENV_CONFIG[ENV])
 
     config['ENV'] = ENV
-    config['MODEL_NAME_OR_PATH'] = os.getenv['MODEL_NAME_OR_PATH']
+    config['MODEL_NAME_OR_PATH'] = os.getenv('MODEL_NAME_OR_PATH')
     config['DEVICE'] = 'cuda' if torch.cuda.is_available() and config['USE_CUDE_IF_AVAILABLE'] else 'cpu'
 
     return config
