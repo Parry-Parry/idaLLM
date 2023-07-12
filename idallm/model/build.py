@@ -16,7 +16,7 @@ def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
     tokenizer.padding_side = "left"  # Allow batched inference
 
     with init_empty_weights():
-        model = LlamaForCausalLM.from_pretrained(config)
+        model = LlamaForCausalLM.from_config(config)
 
     model.tie_weights()
     model = load_checkpoint_and_dispatch(
