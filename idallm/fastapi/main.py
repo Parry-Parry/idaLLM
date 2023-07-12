@@ -3,14 +3,14 @@
 
 import os
 import sys
+import numpy as np
+import torch
+from fire import Fire
 
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
-import numpy as np
-import torch
-from fire import Fire
 
 from idallm.model.build import init_causallm
 from idallm.fastapi.predict import predict

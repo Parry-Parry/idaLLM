@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +10,7 @@ class InferenceInput(BaseModel):
     """
     Input values for model inference
     """
-    prompt : str = Field(..., example='I am a Language Model', title='Prompt for generation')
+    text : str = Field(..., example='I am a Language Model', title='Prompt for generation')
     generation_params : Dict[str, Any] = Field(..., example={'max_length': 50}, title='Generation parameters')
 
 
@@ -19,7 +19,7 @@ class InferenceResult(BaseModel):
     Inference result from the model
     """
     text : str = Field(..., example='I am a Language Model', title='Returned Text')
-    logits : List[Union[List[float], float]] = Field(..., example=[0.1, 0.2, 0.3], title='Log Probabilities over generation')
+    logits : List[List[float] | float] = Field(..., example=[0.1, 0.2, 0.3], title='Log Probabilities over generation')
 
 
 class InferenceResponse(BaseModel):

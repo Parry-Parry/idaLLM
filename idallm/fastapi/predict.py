@@ -1,7 +1,9 @@
 from typing import List, Tuple
 import torch
-from idallm.fastapi.config import CONFIG
 import numpy as np
+
+from idallm.fastapi.config import CONFIG
+
 
 
 def preprocess(package: dict, text : List[str]) -> list:
