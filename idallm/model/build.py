@@ -10,7 +10,7 @@ TODO:
 
 def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
     if tokenizer_dir is None: tokenizer_dir = model_dir
-    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
+    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir)
     config = AutoConfig.from_pretrained(model_dir, **kwargs)
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
