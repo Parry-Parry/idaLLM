@@ -1,7 +1,31 @@
 import sys
 import torch
-from transformers import AutoConfig, LlamaForCausalLM, LlamaTokenizer
-from accelerate import load_checkpoint_and_dispatch, init_empty_weights
+from transformers import AutoConfig, LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig
+from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoint_and_dispatch
+
+def get_map(model_id : str, mem : dict, do_int8 : bool = True):
+    with init_empty_weights():
+        config = AutoConfig.from_pretrained(model_id)
+        model = LlamaForCausalLM(config)
+    
+    device_map = infer_auto_device_map(
+        model, max_memory=mem, dtype=torch.int8 if do_int8 else torch.float16, no_split_module_classes=["BloomBlock", "OPTDecoderLayer", "LLaMADecoderLayer"]
+    )
+    del model 
+    return device_map
+
+def get_mem(ngpu : int, gpu_type : str ='3090', cpu_mem : int = 0) -> dict:
+    types = {
+        '3090' : 20,
+        'titan' : 20,
+        'a6000' : 40
+    }
+    if ngpu == 1: return {0 : f'{types[gpu_type]}GIB'}
+    mapping = {0 : f'{types[gpu_type]-4}GIB'}
+    for i in range(1, ngpu):
+        mapping[i] = f'{types[gpu_type]}GiB'
+    if cpu_mem != 0: mapping['cpu'] = f'{cpu_mem}GIB'
+    return mapping
 
 '''
 TODO: 
@@ -33,17 +57,29 @@ def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
 def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
     if tokenizer_dir is None: tokenizer_dir = model_dir
 
-    model = LlamaForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=True,
+        llm_int8_skip_modules=["BloomBlock", "OPTDecoderLayer", "LLaMADecoderLayer"],
+        llm_int8_enable_fp32_cpu_offload=True
+    )
+    model = LlamaForCausalLM.from_pretrained(
+        model_dir,
+        device_map="auto",
+        torch_dtype=torch.int8,
+        low_cpu_mem_usage=True,
+        quantization_config=quantization_config
+    )
+    #model = LlamaForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
     
     tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
 
     model.eval()
-
+    '''
     if torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
-
+    '''
     return model, tokenizer
 
 def tokenize(prompt, tokenizer, add_eos_token=True, cutoff_len=1024):
