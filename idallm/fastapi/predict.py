@@ -22,7 +22,7 @@ def preprocess(package: dict, text : List[str]) -> list:
         return_tensors="pt",
     )
 
-    input_ids = inputs["input_ids"].cuda()
+    input_ids = inputs["input_ids"].to(0)
 
     return input_ids
 
