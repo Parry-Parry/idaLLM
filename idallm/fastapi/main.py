@@ -74,7 +74,7 @@ def do_predict(request: Request, body: InferenceInput):
     logger.info(f'input: {body}')
 
     # prepare input data
-    prompt = body.prompt
+    prompt = body.text
     generation_params = body.generation_params
 
     # run model inference
