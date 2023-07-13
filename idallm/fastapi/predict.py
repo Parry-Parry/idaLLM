@@ -36,7 +36,7 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
     """
 
     # process data
-    X = preprocess(text)
+    X = preprocess(package, text)
 
     # run model
     model = package['model']
