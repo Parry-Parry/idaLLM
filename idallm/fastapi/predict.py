@@ -54,14 +54,14 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
                 )
             outputs.append(outputs_batch)
         sequences = torch.cat([output.sequences.cpu() for output in outputs], dim=0).numpy()
-        logits = torch.cat([output.scores.cpu() for output in outputs], dim=0).numpy()
+        logits = torch.cat([torch.cat(list(output.scores), dim=0).cpu() for output in outputs], dim=0).numpy()
     else:
         with torch.no_grad():    
             outputs = model.generate(
                 X, output_scores=True, return_dict_in_generate=True, **generation_params
             )
             sequences = outputs.sequences.cpu().numpy()
-            logits = outputs.scores.cpu().numpy()
+            logits = torch.cat(list(outputs.scores), dim=0).cpu().numpy()
     
     texts = package["tokenizer"].batch_decode(sequences, skip_special_tokens=True)
     return texts, logits
