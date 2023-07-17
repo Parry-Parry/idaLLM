@@ -54,7 +54,7 @@ def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
 
     return model, tokenizer
 
-def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
+def init_8bitcausallm(model_dir, tokenizer_dir=None, **kwargs):
     if tokenizer_dir is None: tokenizer_dir = model_dir
 
     quantization_config = BitsAndBytesConfig(
@@ -65,21 +65,30 @@ def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
     model = LlamaForCausalLM.from_pretrained(
         model_dir,
         device_map="auto",
-        torch_dtype=torch.int8,
         low_cpu_mem_usage=True,
-        quantization_config=quantization_config
+        quantization_config=quantization_config,
+        **kwargs
     )
-    #model = LlamaForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
     
     tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
 
     model.eval()
-    '''
-    if torch.__version__ >= "2" and sys.platform != "win32":
-        model = torch.compile(model)
-    '''
+
+    return model, tokenizer
+
+def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
+    if tokenizer_dir is None: tokenizer_dir = model_dir
+
+    model = LlamaForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
+    
+    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
+    tokenizer.pad_token_id = (0)
+    tokenizer.padding_side = "left"  # Allow batched inference
+
+    model.eval()
+    
     return model, tokenizer
 
 def tokenize(prompt, tokenizer, add_eos_token=True, cutoff_len=1024):

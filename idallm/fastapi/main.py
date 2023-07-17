@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 
-from idallm.model.build import init_causallm_acc, init_causallm
+from idallm.model.build import init_causallm_acc, init_causallm, init_8bitcausallm
 from idallm.fastapi.predict import predict
 from idallm.fastapi.config import CONFIG
 from idallm.fastapi.schema import *
@@ -51,7 +51,10 @@ async def startup_event():
     if CONFIG['DISTRIBUTED']:
         model, tokenizer = init_causallm_acc(CONFIG["MODEL_NAME_OR_PATH"])
     else:
-        model, tokenizer = init_causallm(CONFIG["MODEL_NAME_OR_PATH"])
+        if CONFIG['QUANTIZED']:
+            model, tokenizer = init_8bitcausallm(CONFIG["MODEL_NAME_OR_PATH"])
+        else:
+            model, tokenizer = init_causallm(CONFIG["MODEL_NAME_OR_PATH"])
 
     # add model and other preprocess tools to app state
     app.package = {
