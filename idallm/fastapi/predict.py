@@ -8,8 +8,8 @@ def preprocess(package: dict, text : List[str]) -> list:
     """
     Preprocess data before running with model, for example scaling and doing one hot encoding
     :param package: dict from fastapi state including model and preocessing objects
-    :param package: list of input to be proprocessed
-    :return: list of proprocessed input
+    :param text: list of input to be proprocessed
+    :return: tensor of preprocessed input
     """
 
     # preprocessing text for sequence_classification, token_classification or text_generation
@@ -60,7 +60,7 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
                 X, **generation_params
             ).cpu()
 
-    texts = package["tokenizer"].decode(outputs, skip_special_tokens=True)
+    texts = package["tokenizer"].batch_decode(outputs, skip_special_tokens=True)
     logits = outputs.logits.numpy()
 
     return texts, logits

@@ -8,7 +8,8 @@ import torch
 # Config that serves all environment
 GLOBAL_CONFIG = {
     "USE_CUDE_IF_AVAILABLE": True,
-    "ROUND_DIGIT": 6
+    "ROUND_DIGIT": 6,
+    "BATCH_SIZE": 8,
 }
 
 # Environment specific config, or overwrite of GLOBAL_CONFIG
@@ -46,7 +47,6 @@ def get_config() -> dict:
     config.update(ENV_CONFIG[ENV])
 
     config['ENV'] = ENV
-    config['BATCH_SIZE'] = 8
     config['MODEL_NAME_OR_PATH'] = os.getenv('MODEL_NAME_OR_PATH')
     config['DISTRIBUTED'] = int(os.getenv('DISTRIBUTED', 0))
     config['QUANTIZED'] = int(os.getenv('QUANTIZED', 0))
