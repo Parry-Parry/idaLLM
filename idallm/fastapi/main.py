@@ -74,14 +74,13 @@ def do_predict(request: Request, body: InferenceInput):
     """
 
     logger.info('API predict called')
-    logger.info(f'input: {body}')
 
     # prepare input data
-    prompt = body.text
+    prompts = body.text
     generation_params = body.generation_params
 
     # run model inference
-    text, logits = predict(app.package, [prompt], generation_params)
+    text, logits = predict(app.package, prompts, generation_params)
 
     # round probablities for json
     logits = np.around(logits, decimals=CONFIG['ROUND_DIGIT']).tolist()

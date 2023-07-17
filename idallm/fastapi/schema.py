@@ -10,7 +10,7 @@ class InferenceInput(BaseModel):
     """
     Input values for model inference
     """
-    text : str = Field(..., example='I am a Language Model', title='Prompt for generation')
+    text : List[str] = Field(..., example=['I am a Language Model'], title='Prompt for generation')
     generation_params : Dict[str, Any] = Field(..., example={'max_length': 50}, title='Generation parameters')
 
 
@@ -18,8 +18,8 @@ class InferenceResult(BaseModel):
     """
     Inference result from the model
     """
-    text : str = Field(..., example='I am a Language Model', title='Returned Text')
-    logits : List[List[float]] = Field(..., example=[0.1, 0.2, 0.3], title='Log Probabilities over generation')
+    text : List[str] = Field(..., example=['I am a Language Model'], title='Returned Text')
+    logits : List[List[List[float]]] = Field(..., example=[[[0.1, 0.2, 0.3]]], title='Log Probabilities over generation')
 
 
 class InferenceResponse(BaseModel):
