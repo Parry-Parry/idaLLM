@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 
-from idallm.model.build import init_causallm_acc, init_causallm, init_8bitcausallm
+from idallm.model.build import init_causallm
 from idallm.fastapi.predict import predict
 from idallm.fastapi.config import CONFIG
 from idallm.fastapi.schema import *
