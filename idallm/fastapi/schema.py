@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 
 
