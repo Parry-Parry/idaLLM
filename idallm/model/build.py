@@ -52,9 +52,9 @@ def init_causallm(**kwargs):
         })
 
     if CONFIG["DISTRIBUTED"]:
-        additional_kwargs = {
+        additional_kwargs.update({
             "device_map": "auto",
-        }
+        })
 
     model = LlamaForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs).cuda()
     
