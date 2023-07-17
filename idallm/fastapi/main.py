@@ -48,13 +48,8 @@ async def startup_event():
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
     # Initialize the pytorch model
-    if CONFIG['DISTRIBUTED']:
-        model, tokenizer = init_causallm_acc(CONFIG["MODEL_NAME_OR_PATH"])
-    else:
-        if CONFIG['QUANTIZED']:
-            model, tokenizer = init_8bitcausallm(CONFIG["MODEL_NAME_OR_PATH"])
-        else:
-            model, tokenizer = init_causallm(CONFIG["MODEL_NAME_OR_PATH"])
+
+    model, tokenizer = init_causallm()
 
     # add model and other preprocess tools to app state
     app.package = {

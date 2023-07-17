@@ -3,6 +3,8 @@ import torch
 from transformers import AutoConfig, LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig
 from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoint_and_dispatch
 
+from idallm.fastapi.config import CONFIG
+
 def get_map(model_id : str, mem : dict, do_int8 : bool = True):
     with init_empty_weights():
         config = AutoConfig.from_pretrained(model_id)
@@ -32,56 +34,29 @@ TODO:
     - Add adapter support
 '''
 
-def init_causallm_acc(model_dir, tokenizer_dir=None, **kwargs):
-    if tokenizer_dir is None: tokenizer_dir = model_dir
-    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir)
-    config = AutoConfig.from_pretrained(model_dir, **kwargs)
-    tokenizer.pad_token_id = (0)
-    tokenizer.padding_side = "left"  # Allow batched inference
+def init_causallm(**kwargs):
+    model_dir = CONFIG["MODEL_NAME_OR_PATH"]
+    tokenizer_dir = model_dir
+    additional_kwargs = {}
 
-    with init_empty_weights():
-        model = LlamaForCausalLM(config)
+    if CONFIG["QUANTIZED"]:
+        quantization_config = BitsAndBytesConfig(
+            load_in_8bit=True,
+            llm_int8_skip_modules=["BloomBlock", "OPTDecoderLayer", "LLaMADecoderLayer"],
+            llm_int8_enable_fp32_cpu_offload=True
+        )
+        additional_kwargs.update({
+            "quantization_config": quantization_config,
+            "low_cpu_mem_usage": True,
+            "device_map": "auto"
+        })
 
-    model.tie_weights()
-    model = load_checkpoint_and_dispatch(
-        model, model_dir, device_map="auto"
-    )
+    if CONFIG["DISTRIBUTED"]:
+        additional_kwargs = {
+            "device_map": "auto",
+        }
 
-    model.eval()
-
-    if torch.__version__ >= "2" and sys.platform != "win32":
-        model = torch.compile(model)
-
-    return model, tokenizer
-
-def init_8bitcausallm(model_dir, tokenizer_dir=None, **kwargs):
-    if tokenizer_dir is None: tokenizer_dir = model_dir
-
-    quantization_config = BitsAndBytesConfig(
-        load_in_8bit=True,
-        llm_int8_skip_modules=["BloomBlock", "OPTDecoderLayer", "LLaMADecoderLayer"],
-        llm_int8_enable_fp32_cpu_offload=True
-    )
-    model = LlamaForCausalLM.from_pretrained(
-        model_dir,
-        device_map="auto",
-        low_cpu_mem_usage=True,
-        quantization_config=quantization_config,
-        **kwargs
-    )
-    
-    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
-    tokenizer.pad_token_id = (0)
-    tokenizer.padding_side = "left"  # Allow batched inference
-
-    model.eval()
-
-    return model, tokenizer
-
-def init_causallm(model_dir, tokenizer_dir=None, **kwargs):
-    if tokenizer_dir is None: tokenizer_dir = model_dir
-
-    model = LlamaForCausalLM.from_pretrained(model_dir, **kwargs).cuda()
+    model = LlamaForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs).cuda()
     
     tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)
