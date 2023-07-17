@@ -26,12 +26,16 @@ def preprocess(package: dict, text : List[str]) -> list:
 
     return input_ids
 
+def iterate_batch(X, batch_size):
+    for i in range(0, len(X), batch_size):
+        yield X[i:min(i + batch_size, len(X))]
 
 def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, np.ndarray]:
     """
     Run model and get result
     :param package: dict from fastapi state including model and preocessing objects
-    :param package: list of input values
+    :param text: list of input values
+    :param generation_params: dict of generation parameters
     :return: numpy array of model output
     """
 
@@ -40,12 +44,23 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
 
     # run model
     model = package['model']
-    with torch.no_grad():    
-        outputs = model.generate(
-            X, **generation_params
-        ).cpu()
+    if len(X) > CONFIG['BATCH_SIZE']:
+        X_batches = list(iterate_batch(X, CONFIG['BATCH_SIZE']))
+        outputs = []
+        for X_batch in X_batches:
+            with torch.no_grad():    
+                outputs_batch = package['model'].generate(
+                    X_batch, **generation_params
+                ).cpu()
+            outputs.append(outputs_batch)
+        outputs = torch.cat(outputs)
+    else:
+        with torch.no_grad():    
+            outputs = model.generate(
+                X, **generation_params
+            ).cpu()
 
-    texts = package["tokenizer"].decode(outputs, skip_special_tokens=True)[0]
-    logits = outputs.logits.numpy()[0]
+    texts = package["tokenizer"].decode(outputs, skip_special_tokens=True)
+    logits = outputs.logits.numpy()
 
     return texts, logits

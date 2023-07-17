@@ -46,6 +46,7 @@ def get_config() -> dict:
     config.update(ENV_CONFIG[ENV])
 
     config['ENV'] = ENV
+    config['BATCH_SIZE'] = 8
     config['MODEL_NAME_OR_PATH'] = os.getenv('MODEL_NAME_OR_PATH')
     config['DISTRIBUTED'] = int(os.getenv('DISTRIBUTED', 0))
     config['QUANTIZED'] = int(os.getenv('QUANTIZED', 0))
