@@ -50,17 +50,20 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
         for X_batch in X_batches:
             with torch.no_grad():    
                 outputs_batch = package['model'].generate(
-                    X_batch, **generation_params
+                    X_batch, output_scores=True, return_dict_in_generate=True, **generation_params
                 ).cpu()
             outputs.append(outputs_batch)
-        outputs = torch.cat(outputs)
+        sequences = torch.cat([output.sequences for output in outputs], dim=0).numpy()
+        logits = torch.cat([output.scores for output in outputs], dim=0).numpy()
     else:
         with torch.no_grad():    
             outputs = model.generate(
-                X, **generation_params
+                X, output_scores=True, return_dict_in_generate=True, **generation_params
             ).cpu()
-
-    texts = package["tokenizer"].batch_decode(outputs, skip_special_tokens=True)
-    logits = outputs.logits.numpy()
+            sequences = outputs.sequences.numpy()
+            logits = outputs.scores.numpy()
+    
+    texts = package["tokenizer"].batch_decode(sequences, skip_special_tokens=True)
+    logits = outputs.scores.numpy()
 
     return texts, logits
