@@ -8,9 +8,12 @@ import torch
 from fire import Fire
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 from idallm.model.build import init_causallm
 from idallm.fastapi.predict import predict
@@ -37,6 +40,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"])
 #app.add_exception_handler(RequestValidationError, validation_exception_handler)
 #app.add_exception_handler(Exception, python_exception_handler)
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
+    )
 
 @app.on_event("startup")
 async def startup_event():
@@ -113,7 +122,7 @@ def show_about():
     }
 
 def main(host : str, port : int):
-    uvicorn.run("main:app", host=host, port=port,
+    uvicorn.run(app, host=host, port=port,
                 reload=True,
                 )
 
