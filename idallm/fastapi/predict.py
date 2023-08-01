@@ -16,7 +16,7 @@ def preprocess(package: dict, text : List[str]) -> list:
 
     inputs = package["tokenizer"].encode_plus(
         text,
-        max_length=CONFIG['max_input_length'],
+        max_length=CONFIG['MAX_INPUT_LENGTH'],
         padding='longest',
         add_special_tokens=True,
         return_tensors="pt",
