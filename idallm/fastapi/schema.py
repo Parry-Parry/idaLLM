@@ -4,7 +4,7 @@
 
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field
-import numpy as np
+
 
 class InferenceInput(BaseModel):
     """
@@ -19,7 +19,8 @@ class InferenceResult(BaseModel):
     Inference result from the model
     """
     text : List[str] = Field(..., example=['I am a Language Model'], title='Returned Text')
-    logits : np.ndarray = Field(default_factory=lambda: np.zeros((10, 5, 10)), title='Log Probabilities over generation')
+    logits : list = Field(..., example=[[[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]], [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]], title='Log Probabilities over generation')
+
 
 class InferenceResponse(BaseModel):
     """
