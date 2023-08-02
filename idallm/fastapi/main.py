@@ -57,7 +57,7 @@ async def startup_event():
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
     # Initialize the pytorch model
-    
+
     model, tokenizer = init_causallm()
 
     # add model and other preprocess tools to app state
@@ -122,9 +122,7 @@ def show_about():
     }
 
 def main(host : str, port : int):
-    uvicorn.run(app, host=host, port=port,
-                reload=True,
-                )
+    uvicorn.run(app, host=host, port=port)
 
 if __name__ == '__main__':
     Fire(main)
