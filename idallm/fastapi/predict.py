@@ -3,6 +3,7 @@ import torch
 import numpy as np
 
 from idallm.fastapi.config import CONFIG
+from idallm.fastapi.util import batch, cut_prompt
 
 def preprocess(package: dict, text : List[str]) -> list:
     """
@@ -30,7 +31,7 @@ def iterate_batch(X, batch_size):
     for i in range(0, len(X), batch_size):
         yield X[i:min(i + batch_size, len(X))]
 
-def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, np.ndarray]:
+def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[str, np.ndarray]:
     """
     Run model and get result
     :param package: dict from fastapi state including model and preocessing objects
@@ -45,7 +46,7 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
     # run model
     model = package['model']
     if len(X) > CONFIG['BATCH_SIZE']:
-        X_batches = list(iterate_batch(X, CONFIG['BATCH_SIZE']))
+        X_batches = list(batch(X, CONFIG['BATCH_SIZE']))
         outputs = []
         for X_batch in X_batches:
             with torch.no_grad():    
@@ -64,4 +65,5 @@ def predict(package: dict, text : str, generation_params : dict) -> Tuple[str, n
             logits = torch.cat(list(outputs.scores), dim=0).cpu().numpy()
     
     texts = package["tokenizer"].batch_decode(sequences, skip_special_tokens=True)
+    if CONFIG['REMOVE_PROMPT']: texts = list(map(cut_prompt, texts, text))
     return texts, logits
