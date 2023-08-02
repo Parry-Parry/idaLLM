@@ -47,6 +47,8 @@ def get_config() -> dict:
     config.update(ENV_CONFIG[ENV])
 
     config['ENV'] = ENV
+    config['MODEL_TYPE'] = os.getenv('MODEL_TYPE', 'causallm')
+    config['REMOVE_PROMPT'] = int(os.getenv('REMOVE_PROMPT', 0))
     config['MODEL_NAME_OR_PATH'] = os.getenv('MODEL_NAME_OR_PATH')
     config['DISTRIBUTED'] = int(os.getenv('DISTRIBUTED', 0))
     config['QUANTIZED'] = int(os.getenv('QUANTIZED', 0))

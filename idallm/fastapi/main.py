@@ -57,7 +57,7 @@ async def startup_event():
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
     # Initialize the pytorch model
-
+    
     model, tokenizer = init_causallm()
 
     # add model and other preprocess tools to app state
