@@ -56,6 +56,10 @@ async def startup_event():
     logger.info('Running envirnoment: {}'.format(CONFIG['ENV']))
     logger.info('PyTorch using device: {}'.format(CONFIG['DEVICE']))
 
+    if CONFIG['DEBUG']:
+        logger.info('Running in DEBUG mode')
+        logger.setLevel('DEBUG')
+
     # Initialize the pytorch model
 
     model, tokenizer = init_causallm()

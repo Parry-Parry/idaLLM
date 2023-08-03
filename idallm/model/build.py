@@ -56,7 +56,8 @@ def init_causallm(**kwargs):
             "device_map": "auto",
         })
 
-    model = LlamaForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs).cuda()
+    model = LlamaForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs)
+    if 'device_map' not in additional_kwargs: model = model.cuda()
     
     tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)

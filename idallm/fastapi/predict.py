@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import torch
 import numpy as np
+import logging
 
 from idallm.fastapi.config import CONFIG
 from idallm.fastapi.util import batch, cut_prompt
@@ -41,9 +42,11 @@ def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[
     """
 
     # process data
+    logging.debug('Preprocessing data')
     X = preprocess(package, text)
 
     # run model
+    logging.debug('Running model')
     model = package['model']
     if len(X) > CONFIG['BATCH_SIZE']:
         X_batches = list(batch(X, CONFIG['BATCH_SIZE']))
@@ -58,12 +61,13 @@ def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[
         logits = torch.cat([torch.cat(list(output.scores), dim=0).cpu() for output in outputs], dim=0).numpy()
     else:
         with torch.no_grad():    
+            logging.debug('Generating text')
             outputs = model.generate(
                 X, output_scores=True, return_dict_in_generate=True, **generation_params
             )
             sequences = outputs.sequences.cpu().numpy()
             logits = torch.cat(list(outputs.scores), dim=0).cpu().numpy()
-    
+    logging.debug('Decoding text')
     texts = package["tokenizer"].batch_decode(sequences, skip_special_tokens=True)
     if CONFIG['REMOVE_PROMPT']: texts = list(map(cut_prompt, texts, text))
     return texts, logits
