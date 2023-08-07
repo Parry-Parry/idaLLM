@@ -92,6 +92,7 @@ def do_predict(request: Request, body: InferenceInput):
 
     # round probablities for json
     logits = np.around(logits, decimals=CONFIG['ROUND_DIGIT']).tolist()
+    logits = np.nan_to_num(logits, copy=False)
 
     # prepare json for returning
     results = {
