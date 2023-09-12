@@ -52,6 +52,7 @@ def get_config() -> dict:
     config['MODEL_NAME_OR_PATH'] = os.getenv('MODEL_NAME_OR_PATH')
     config['DISTRIBUTED'] = int(os.getenv('DISTRIBUTED', 0))
     config['QUANTIZED'] = int(os.getenv('QUANTIZED', 0))
+    config['HALF'] = int(os.getenv('HALF', 0))
     config['MAX_INPUT_LENGTH'] = int(os.getenv('MAX_INPUT_LENGTH', 512))
     config['DEVICE'] = 'cuda' if torch.cuda.is_available() and config['USE_CUDA_IF_AVAILABLE'] else 'cpu'
     config['DEBUG'] = int(os.getenv('DEBUG', 0))

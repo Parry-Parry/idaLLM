@@ -1,6 +1,6 @@
 import sys
 import torch
-from transformers import AutoConfig, LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig
+from transformers import AutoConfig, LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoint_and_dispatch
 
 from idallm.fastapi.config import CONFIG
@@ -56,10 +56,11 @@ def init_causallm(**kwargs):
             "device_map": "auto",
         })
 
-    model = LlamaForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs)
+    model = AutoModelForCausalLM.from_pretrained(model_dir, **additional_kwargs, **kwargs)
+    if CONFIG['HALF'] and 'device_map' not in additional_kwargs: model = model.half()
     if 'device_map' not in additional_kwargs: model = model.cuda()
     
-    tokenizer = LlamaTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir, unk_token="<unk>", bos_token="<s>", eos_token="</s>")
     tokenizer.pad_token_id = (0)
     tokenizer.padding_side = "left"  # Allow batched inference
 
