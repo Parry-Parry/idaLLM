@@ -18,7 +18,7 @@ class InferenceResult(BaseModel):
     """
     Inference result from the model
     """
-    text : List[str] = Field(..., example=['I am a Language Model'], title='Returned Text')
+    text : list = Field(..., example=['I am a Language Model'], title='Returned Text')
     logits : list = Field(..., example=[[[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]], [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]], title='Log Probabilities over generation')
 
 

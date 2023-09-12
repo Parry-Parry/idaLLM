@@ -24,7 +24,7 @@ from idallm.fastapi.schema import *
 app = FastAPI(
     title="LLM API",
     description="Deployed inference on Llama",
-    version="0.0.1",
+    version="0.0.2",
     terms_of_service=None,
     contact=None,
     license_info=None
@@ -41,7 +41,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"])
 #app.add_exception_handler(Exception, python_exception_handler)
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(_: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
@@ -76,7 +76,7 @@ async def startup_event():
           responses={422: {"model": ErrorResponse},
                      500: {"model": ErrorResponse}}
           )
-def do_predict(request: Request, body: InferenceInput):
+def do_predict(_: Request, body: InferenceInput):
     """
     Perform prediction on input data
     """
@@ -94,10 +94,14 @@ def do_predict(request: Request, body: InferenceInput):
     logits = np.around(logits, decimals=CONFIG['ROUND_DIGIT']).tolist()
     logits = np.nan_to_num(logits, copy=False)
 
+    # check for nan logits
+    if np.isnan(logits).any():
+        print('nan logits detected')
+
     # prepare json for returning
     results = {
         'text': text,
-        'logits': logits
+        'logits': logits.tolist()
     }
 
     return {

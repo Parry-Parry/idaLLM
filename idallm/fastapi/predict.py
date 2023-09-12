@@ -24,7 +24,7 @@ def preprocess(package: dict, text : List[str]) -> list:
         return_tensors="pt",
     )
 
-    input_ids = inputs["input_ids"].to(0)
+    input_ids = inputs["input_ids"].to(package["model"].device)
 
     return input_ids
 
@@ -38,7 +38,7 @@ def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[
     :param package: dict from fastapi state including model and preocessing objects
     :param text: list of input values
     :param generation_params: dict of generation parameters
-    :return: numpy array of model output
+    :return: text, numpy array of model output
     """
 
     # process data
@@ -53,11 +53,11 @@ def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[
         outputs = []
         for X_batch in X_batches:
             with torch.no_grad():    
-                outputs_batch = package['model'].generate(
+                outputs_batch = model.generate(
                     X_batch, output_scores=True, return_dict_in_generate=True, **generation_params
                 )
             outputs.append(outputs_batch)
-        sequences = torch.cat([output.sequences.cpu() for output in outputs], dim=0).numpy()
+        sequences = torch.cat([output.sequences.cpu() for output in outputs], dim=0)
         logits = torch.cat([torch.cat(list(output.scores), dim=0).cpu() for output in outputs], dim=0).numpy()
     else:
         with torch.no_grad():    
@@ -65,10 +65,9 @@ def predict(package: dict, text : List[str], generation_params : dict) -> Tuple[
             outputs = model.generate(
                 X, output_scores=True, return_dict_in_generate=True, **generation_params
             )
-            sequences = outputs.sequences.cpu().numpy()
+            sequences = outputs.sequences.cpu()
             logits = torch.cat(list(outputs.scores), dim=0).cpu().numpy()
     logging.info('Decoding text')
     texts = package["tokenizer"].batch_decode(sequences, skip_special_tokens=True)
     if CONFIG['REMOVE_PROMPT']: texts = list(map(cut_prompt, texts, text))
-    print(texts)
     return texts, logits

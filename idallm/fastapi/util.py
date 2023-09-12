@@ -1,4 +1,3 @@
-import re
 import itertools
 
 def cut_prompt(output : str, input : str):
@@ -10,4 +9,4 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 def concatenate(*lists):
-    return itertools.chain.from_iterable(lists)
+    return [*itertools.chain.from_iterable(lists)]
