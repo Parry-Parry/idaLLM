@@ -2,6 +2,13 @@ import json
 from typing import AsyncGenerator
 from fire import Fire
 
+from yaml import load
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
+
 from fastapi import BackgroundTasks
 from starlette.requests import Request
 from starlette.responses import StreamingResponse, Response
@@ -111,8 +118,9 @@ def send_sample_request():
     for line in output.iter_lines():
         print(line.decode("utf-8"))
 
-def main(model : str, download_dir : str = None, dtype : str = None, seed : int = 42, swap_space : int = None): 
-    deployment = VLLMPredictDeployment.bind(model=model, download_dir=download_dir, dtype=dtype, seed=seed, swap_space=swap_space)
+def main(config : str): 
+    config = load(open(config, 'r'), Loader=Loader)
+    deployment = VLLMPredictDeployment.bind(**config)
     serve.run(deployment)
     send_sample_request()
 
