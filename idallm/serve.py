@@ -82,6 +82,7 @@ class VLLMPredictDeployment:
         request_dict = await request.json()
         prompt = request_dict.pop("prompt")
         stream = request_dict.pop("stream", False)
+        include_prompt = request_dict.pop("include_prompt", False)
         sampling_params = SamplingParams(**request_dict)
         request_id = random_uuid()
         results_generator = self.engine.generate(prompt, sampling_params, request_id)
@@ -104,8 +105,9 @@ class VLLMPredictDeployment:
             final_output = request_output
 
         assert final_output is not None
-        prompt = final_output.prompt
-        text_outputs = [prompt + output.text for output in final_output.outputs]
+        if include_prompt: 
+            prompt = final_output.prompt
+            text_outputs = [prompt + output.text for output in final_output.outputs]
         ret = {"text": text_outputs}
         return Response(content=json.dumps(ret))
 
