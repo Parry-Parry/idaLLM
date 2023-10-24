@@ -1,4 +1,5 @@
 import json
+from multiprocessing import Process
 from typing import AsyncGenerator
 from fire import Fire
 
@@ -111,6 +112,10 @@ class VLLMPredictDeployment:
         ret = {"text": text_outputs}
         return Response(content=json.dumps(ret))
 
+def deployment(config : dict):
+    deployment = VLLMPredictDeployment.bind(**config)
+    serve.run(deployment)
+
 def send_sample_request():
     import requests
 
@@ -122,8 +127,9 @@ def send_sample_request():
 
 def main(config : str): 
     config = load(open(config, 'r'), Loader=Loader)
-    deployment = VLLMPredictDeployment.bind(**config)
-    serve.run(deployment)
+    api_process = Process(target=deployment, args=(config,))
+    api_process.start()
+
     send_sample_request()
 
 if __name__ == "__main__":
