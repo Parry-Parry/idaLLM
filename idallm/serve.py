@@ -125,12 +125,11 @@ def send_sample_request():
     for line in output.iter_lines():
         print(line.decode("utf-8"))
 
-def main(config : str): 
+def main(config : str, debug : bool = False): 
     config = load(open(config, 'r'), Loader=Loader)
-    api_process = Process(target=deployment, args=(config,))
-    api_process.start()
-
-    send_sample_request()
+    deployment(config)
+    if debug: 
+        send_sample_request()
 
 if __name__ == "__main__":
     Fire(main)
