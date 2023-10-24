@@ -5,7 +5,7 @@
 pip install --upgrade git+https://github.com/Parry-Parry/idaLLM.git
 ```
 
-Requires:
+## Requires:
 * torch : self-explanatory
 * transformers : self-explanatory
 * fastapi: Backbone used to serve applications over TCP
