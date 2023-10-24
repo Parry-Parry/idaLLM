@@ -13,8 +13,10 @@ from vllm.utils import random_uuid
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
+GLOBALMAX_TOKENS = 512
 app = FastAPI()
 engine = None
+tokenizer = None
 
 @app.post("/generate")
 async def generate(request: Request) -> Response:
@@ -27,8 +29,14 @@ async def generate(request: Request) -> Response:
     """
     request_dict = await request.json()
     prompt = request_dict.pop("prompt")
+    if isinstance(prompt, str):
+        prompt = [prompt]
+    
+    prompt = [p for p in prompt if len(tokenizer.encode(p)) < GLOBALMAX_TOKENS]
+
     stream = request_dict.pop("stream", False)
     include_prompt = request_dict.pop("include_prompt", False)
+    include_logits = request_dict.pop("include_logits", False)
     sampling_params = SamplingParams(**request_dict)
     request_id = random_uuid()
 
@@ -72,6 +80,10 @@ async def generate(request: Request) -> Response:
     else:
         text_outputs = [output.text for output in final_output.outputs]
     ret = {"text": text_outputs}
+    if include_logits:
+        logits = [output.logprobs for output in final_output.outputs]
+        logits = [[{k: round(v, 4) for k, v in logit.items()} for logit in logprobs] for logprobs in logits] 
+        ret["logits"] = logits
     return JSONResponse(ret)
 
 
@@ -113,6 +125,7 @@ if __name__ == "__main__":
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
+    tokenizer = engine.get_tokenizer()
 
     uvicorn.run(app,
                 host=args.host,
