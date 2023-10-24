@@ -19,6 +19,7 @@ from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
 from ray import serve
+import time
 
 @serve.deployment(ray_actor_options={"num_gpus": 1})
 class VLLMPredictDeployment:
@@ -130,6 +131,9 @@ def main(config : str, debug : bool = False):
     deployment(config)
     if debug: 
         send_sample_request()
+    while(True):
+        time.sleep(0.00001)
+
 
 if __name__ == "__main__":
     Fire(main)
