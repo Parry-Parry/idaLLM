@@ -2,7 +2,7 @@ import argparse
 import json
 from typing import AsyncGenerator
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 import uvicorn
 
@@ -34,18 +34,27 @@ async def generate(request: Request) -> Response:
 
     results_generator = engine.generate(prompt, sampling_params, request_id)
 
-    # Streaming case
-    async def stream_results() -> AsyncGenerator[bytes, None]:
+    async def stream_results(results_generator) -> AsyncGenerator[bytes, None]:
+        num_returned = 0
         async for request_output in results_generator:
-            prompt = request_output.prompt
-            text_outputs = [
-                prompt + output.text for output in request_output.outputs
-            ]
-            ret = {"text": text_outputs}
-            yield (json.dumps(ret) + "\0").encode("utf-8")
+            text_outputs = [output.text for output in request_output.outputs]
+            assert len(text_outputs) == 1
+            text_output = text_outputs[0][num_returned:]
+            ret = {"text": text_output}
+            yield (json.dumps(ret) + "\n").encode("utf-8")
+            num_returned += len(text_output)
+    
+    async def may_abort_request(self, request_id) -> None:
+        await self.engine.abort(request_id)
 
     if stream:
-        return StreamingResponse(stream_results())
+        background_tasks = BackgroundTasks()
+        # Using background_taks to abort the the request
+        # if the client disconnects.
+        background_tasks.add_task(may_abort_request, request_id)
+        return StreamingResponse(
+            stream_results(results_generator), background=background_tasks
+        )
 
     # Non-streaming case
     final_output = None
@@ -60,6 +69,8 @@ async def generate(request: Request) -> Response:
     if include_prompt: 
             prompt = final_output.prompt
             text_outputs = [prompt + output.text for output in final_output.outputs]
+    else:
+        text_outputs = [output.text for output in final_output.outputs]
     ret = {"text": text_outputs}
     return JSONResponse(ret)
 
