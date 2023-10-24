@@ -21,7 +21,7 @@ from vllm.utils import random_uuid
 from ray import serve
 import time
 
-@serve.deployment(route_prefix="/generate", ray_actor_options={"num_gpus": 1})
+@serve.deployment(route_prefix="/generate", ray_actor_options={"num_gpus": 1}, max_concurrent_queries=8)
 class VLLMPredictDeployment:
     def __init__(self, **kwargs):
         """
