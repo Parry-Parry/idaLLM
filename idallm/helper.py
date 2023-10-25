@@ -1,4 +1,3 @@
-from vllm import LLM
 import json
 from typing import Iterable, List
 from yaml import load
@@ -42,10 +41,6 @@ def post_http_request(prompt: str,
     return response
 
 ### MAIN FUNCTIONS ###
-
-def model_init(model_name_or_path, dtype : str = None, quantization : str = None, **kwargs):
-    model = LLM(model=model_name_or_path, dtype=dtype, quantization=quantization, **kwargs)
-    return model, model.get_tokenizer()
 
 def request(api_url : str, prompt : str, params : dict = None, config_file : str = None):
     if not params:
