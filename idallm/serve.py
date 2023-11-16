@@ -35,6 +35,7 @@ async def generate(request: Request) -> Response:
     prompt = [p for p in prompt if len(tokenizer.encode(p)) < GLOBALMAX_TOKENS]
 
     stream = request_dict.pop("stream", False)
+    include_prompt = request_dict.pop("include_prompt", False)
     include_logits = request_dict.pop("include_logits", None)
     sampling_params = SamplingParams(**request_dict, logprobs=include_logits)
     request_id = random_uuid()
@@ -124,7 +125,7 @@ if __name__ == "__main__":
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
-    tokenizer = engine.get_tokenizer()
+    tokenizer = engine.tokenizer()
 
     uvicorn.run(app,
                 host=args.host,
