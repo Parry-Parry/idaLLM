@@ -16,7 +16,6 @@ TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
 GLOBALMAX_TOKENS = 512
 app = FastAPI()
 engine = None
-tokenizer = None
 
 @app.post("/generate")
 async def generate(request: Request) -> Response:
@@ -31,8 +30,6 @@ async def generate(request: Request) -> Response:
     prompt = request_dict.pop("prompt")
     if isinstance(prompt, str):
         prompt = [prompt]
-    
-    prompt = [p for p in prompt if len(tokenizer.encode(p)) < GLOBALMAX_TOKENS]
 
     stream = request_dict.pop("stream", False)
     include_prompt = request_dict.pop("include_prompt", False)
@@ -125,7 +122,6 @@ if __name__ == "__main__":
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
-    tokenizer = engine.tokenizer
 
     uvicorn.run(app,
                 host=args.host,
