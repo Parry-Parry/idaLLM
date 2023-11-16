@@ -35,9 +35,8 @@ async def generate(request: Request) -> Response:
     prompt = [p for p in prompt if len(tokenizer.encode(p)) < GLOBALMAX_TOKENS]
 
     stream = request_dict.pop("stream", False)
-    include_prompt = request_dict.pop("include_prompt", False)
-    include_logits = request_dict.pop("include_logits", False)
-    sampling_params = SamplingParams(**request_dict)
+    include_logits = request_dict.pop("include_logits", None)
+    sampling_params = SamplingParams(**request_dict, logprobs=include_logits)
     request_id = random_uuid()
 
     results_generator = engine.generate(prompt, sampling_params, request_id)
