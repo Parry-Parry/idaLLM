@@ -1,6 +1,7 @@
 import argparse
 import json
 from typing import AsyncGenerator
+import logging
 
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, Response, StreamingResponse
@@ -28,6 +29,7 @@ async def generate(request: Request) -> Response:
     """
     request_dict = await request.json()
     prompt = request_dict.pop("prompt")
+    logging.info(prompt)
     if isinstance(prompt, str):
         prompt = [prompt]
 
@@ -37,7 +39,7 @@ async def generate(request: Request) -> Response:
     sampling_params = SamplingParams(**request_dict, logprobs=include_logits)
     request_id = random_uuid()
 
-    results_generator = engine.generate(prompt, sampling_params, request_id)
+    results_generator = engine.generate(request_id, prompt=prompt, sampling_params=sampling_params)
 
     async def stream_results(results_generator) -> AsyncGenerator[bytes, None]:
         num_returned = 0
@@ -119,6 +121,8 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8000)
     parser = AsyncEngineArgs.add_cli_args(parser)
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO)
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
