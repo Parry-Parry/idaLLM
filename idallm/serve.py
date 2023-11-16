@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = AsyncLLMEngine.from_engine_args(engine_args)
-    tokenizer = engine.tokenizer()
+    tokenizer = engine.tokenizer
 
     uvicorn.run(app,
                 host=args.host,
