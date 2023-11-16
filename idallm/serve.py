@@ -30,8 +30,8 @@ async def generate(request: Request) -> Response:
     request_dict = await request.json()
     prompt = request_dict.pop("prompt")
     logging.info(prompt)
-    if isinstance(prompt, str):
-        prompt = [prompt]
+    #if isinstance(prompt, str):
+        #prompt = [prompt]
 
     stream = request_dict.pop("stream", False)
     include_prompt = request_dict.pop("include_prompt", False)
