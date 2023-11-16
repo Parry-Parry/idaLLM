@@ -39,7 +39,7 @@ async def generate(request: Request) -> Response:
     sampling_params = SamplingParams(**request_dict, logprobs=include_logits)
     request_id = random_uuid()
 
-    results_generator = engine.generate(request_id, prompt, sampling_params)
+    results_generator = engine.generate(prompt, sampling_params, request_id)
 
     async def stream_results(results_generator) -> AsyncGenerator[bytes, None]:
         num_returned = 0
