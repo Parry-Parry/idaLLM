@@ -27,8 +27,15 @@ def get_streaming_response(response: requests.Response) -> Iterable[List[str]]:
 
 def get_response(response: requests.Response) -> List[str]:
     data = json.loads(response.content)
-    output = data["text"]
-    return output
+    out = {
+        "text": data["text"]
+        }
+    try:
+        logits = data["logits"]
+        out["logits"] = logits
+    except KeyError:
+        pass
+    return out
 
 def post_http_request(prompt: str,
                       api_url: str,
