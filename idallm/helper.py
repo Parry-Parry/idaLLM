@@ -49,9 +49,7 @@ def post_http_request(prompt: str,
 
 ### MAIN FUNCTIONS ###
 
-def request(api_url : str, prompt : str, params : dict = None, config_file : str = None):
-    if not params:
-        params = {}
+def request(api_url : str, prompt : str, params : dict = {}, config_file : str = None):
     if config_file:
         params = load(open(config_file, 'r'), Loader=Loader)
     stream = params.pop('stream', False)
