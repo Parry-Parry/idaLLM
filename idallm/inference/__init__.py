@@ -19,9 +19,6 @@ def parse_input(input : str) -> Union[List[str], List[dict]]:
     elif 'txt' in input:
         type = 'txt'
         return [line.strip() for line in open(input)], type   
-    elif 'yaml' in input:
-        type = 'yaml'
-        return load_yaml(input).values()[0], type
     else:
         raise ValueError(f"Unsupported input format: {input}")
     
