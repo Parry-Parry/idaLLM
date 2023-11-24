@@ -28,5 +28,5 @@ python -m idallm.local.serve --model <MODEL_ID> --input_file my_prompts.txt --ou
 * fastapi: Backbone used to serve applications over TCP
 * ray: Deployment component
 * vllm: Efficient model serving
-## Optional
+## Optional:
 * LightChain: Makes life a lot easier in terms of prompt formatting, chain-prompting and chat functionality
