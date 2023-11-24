@@ -22,11 +22,12 @@ def parse_input(input : str) -> Union[List[str], List[dict]]:
     else:
         raise ValueError(f"Unsupported input format: {input}")
     
-def save_output(output : List[str], out_file : str, type : str) -> None:
+def save_output(output : List[dict], out_file : str, type : str) -> None:
     if type == 'json':
         with open(out_file, 'w') as f:
             for line in output: f.write(json.dumps(line) + '\n')
     elif type == 'txt':
+        output = [line['text'] for line in output]
         with open(out_file, 'w') as f:
             for line in output: f.write(line + '\n')
     else: raise ValueError(f"Unsupported output format: {out_file}")

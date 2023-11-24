@@ -48,7 +48,7 @@ if __name__ == "__main__":
     generation_config = args.generation_config
 
     delattr(args, "input_file")
-    delattr(args, "out_file")
+    delattr(args, "output_file")
     delattr(args, "generation_config")
 
     logging.basicConfig(level=logging.INFO)
