@@ -29,8 +29,6 @@ def save_output(output : List[str], out_file : str, type : str) -> None:
     elif type == 'txt':
         with open(out_file, 'w') as f:
             for line in output: f.write(line + '\n')
-    elif type == 'yaml':
-        with open(out_file, 'w') as f: f.write(save(output, f))
     else: raise ValueError(f"Unsupported output format: {out_file}")
     
 class LLM(object):
