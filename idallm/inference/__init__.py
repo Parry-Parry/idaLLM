@@ -34,7 +34,7 @@ def save_output(output : List[str], out_file : str, type : str) -> None:
 class LLM(object):
     def __init__(self, engine, generation_config) -> None:
         self.engine = engine
-        generation_config = load_yaml(generation_config)
+        generation_config = load_yaml(generation_config) if generation_config is not None else {}
         self.include_prompt = generation_config.pop("include_prompt", False)
         include_logits = generation_config.pop("include_logits", None)
         include_prompt_logits = generation_config.pop("include_prompt_logits", None)
@@ -45,7 +45,7 @@ class LLM(object):
             self.prompt = Prompt.from_json(prompt_json)
         else: self.prompt = None
 
-        self.generation_config = SamplingParams(**generation_config, logprobs=include_logits, prompt_logprobs=include_prompt_logits)
+        self.generation_config = SamplingParams(**generation_config, logprobs=include_logits, prompt_logprobs=include_prompt_logits) if generation_config else None
     
     def __call__(self, prompts) -> Any:
         if isinstance(prompts, str): texts = [prompts]
